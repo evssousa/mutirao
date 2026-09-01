@@ -1,0 +1,19 @@
+# dependências
+node_modules/
+
+# build
+dist/
+build/
+.vercel/
+
+# ambiente — nunca commitar credencial (repositório é público, ver README)
+.env
+.env.local
+.env.*.local
+
+# prisma
+apps/api/prisma/*.db
+
+# editor / sistema
+.DS_Store
+*.log
