@@ -7,9 +7,10 @@ build/
 .vercel/
 
 # ambiente — nunca commitar credencial (repositório é público, ver README)
-.env
-.env.local
-.env.*.local
+# .env* cobre qualquer variante (.env, .env.local, .env.neon, etc.);
+# .env.example é a única exceção, por isso volta a ser rastreado abaixo.
+.env*
+!.env.example
 
 # prisma
 apps/api/prisma/*.db
