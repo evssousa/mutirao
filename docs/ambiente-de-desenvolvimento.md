@@ -139,11 +139,33 @@ docker exec mutirao-postgres pg_isready -U mutirao
 
 ### Opção B — branch no Neon (para testar o que só acontece em produção)
 
-Criar um branch do projeto Neon compartilhado da turma e copiar as duas
-strings de conexão (pooler e direta) de lá para `DATABASE_URL`/`DIRECT_URL`
-— ver docs/plan.md, seção 11 e 12.1, sobre por que produção usa pooler.
-Passo a passo detalhado de onde pegar essas strings: **a preencher** quando
-o Neon do projeto estiver criado.
+O projeto Neon `mutirao` já existe (criado em 2026-09-01). Não há API do
+Neon pra criar projeto — é só pelo console (`https://console.neon.tech`),
+igual ao OAuth App do GitHub (seção 5.1).
+
+Passo a passo (feito uma vez, na criação do projeto — pra usar o banco que
+já existe, pule direto pro final):
+
+1. Console do Neon → novo projeto, nome `mutirao`. O branch padrão já se
+   chama `main` (bate com a convenção da seção 11.5 do plan.md).
+2. Nas configurações de compute do branch `main`, **limitar o autoscale a
+   0,25 CU** (plan.md, seção 11.3 — sem isso a cota gratuita de 100
+   CU-hours/mês some rápido).
+3. Criar o branch `homolog` a partir do `main` (plan.md, seção 11.5).
+4. Na tela de conexão, tem um toggle **"Pooled connection"** — precisa das
+   **duas** strings:
+   - **Pooled** (host termina em `-pooler`) → `DATABASE_URL`
+   - **Direta** (sem `-pooler`) → `DIRECT_URL`, usada só pelas migrations
+     (o pooler não suporta DDL — plan.md, seção 12.1)
+
+Pra usar o banco do Neon em vez do local, cole as duas strings no `.env` e
+rode `npm run db:migrate` normalmente. **Cuidado**: não deixe essas
+strings soltas em outro arquivo que não seja o `.env` — qualquer variante
+de `.env*` (exceto `.env.example`) já cai no `.gitignore`, mas um arquivo
+com nome diferente disso, não.
+
+Validado nesta configuração: `prisma migrate deploy` aplicou a migration,
+`SELECT 1` via pooler respondeu, e o seed rodou normalmente contra o Neon.
 
 ## 7. Rodar as migrations
 
