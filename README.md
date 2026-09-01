@@ -81,4 +81,4 @@ Regras completas em [`docs/plan.md`](docs/plan.md), seção 13.
 
 ## Licença
 
-A definir — ver [`docs/plan.md`](docs/plan.md), seção 9.1.1. A definição acontece antes da primeira contribuição externa.
+[MIT](LICENSE) — decidida na Fase 0, antes da primeira PR de aluno, conforme [`docs/plan.md`](docs/plan.md), seção 9.1.1.

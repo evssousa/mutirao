@@ -754,7 +754,7 @@ Métricas são de turma e de processo. Comparação pública entre alunos indivi
 
 1. Quantidade de alunos e turmas na primeira sprint.
 2. Carga horária semanal real disponível por aluno.
-3. Qual licença adotar. Recomendação: MIT, decidida **antes da primeira PR de aluno**.
+3. ~~Qual licença adotar.~~ **Decidido em 2026-09-01: MIT** — arquivo `LICENSE` na raiz do repositório.
 4. Onde guardar os **arquivos binários** — R2, B2 ou similar. Vercel não serve para isso, e o Neon é só Postgres.
 5. Front e back como **dois projetos Vercel** separados ou colapsados em um só (o que implicaria trocar Vite por Next.js).
 6. Qual provedor e modelo de IA para a decomposição, e quem paga a conta.
