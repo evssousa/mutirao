@@ -14,8 +14,13 @@ import { iniciarSessao, encerrarSessao, exigirAutenticacao } from "../auth/plugi
 const NOME_COOKIE_ESTADO = "mutirao_oauth_estado";
 
 function urlCallback() {
+  // URL_API sobrescreve a base em ambientes onde "localhost" não é
+  // alcançável de fora, como a porta encaminhada do GitHub Codespaces
+  // (ex.: https://<codespace>-3333.app.github.dev). Precisa bater com a
+  // "Authorization callback URL" cadastrada no OAuth App do GitHub.
   const portaApi = process.env.PORTA_API ?? "3333";
-  return `http://localhost:${portaApi}/api/auth/callback/github`;
+  const base = process.env.URL_API ?? `http://localhost:${portaApi}`;
+  return `${base}/api/auth/callback/github`;
 }
 
 export async function rotasAuth(app: FastifyInstance) {

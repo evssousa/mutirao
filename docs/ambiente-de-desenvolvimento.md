@@ -60,6 +60,52 @@ necessário é:
 ficar vazios para subir o projeto e ver a tela — só são necessários para
 testar o login de verdade e a decomposição por IA, respectivamente.
 
+### 5.1 Criar o GitHub OAuth App (para testar login de verdade)
+
+O GitHub **não tem API pra isso** — é só pelo formulário web, na sua conta
+pessoal:
+
+1. Abra `https://github.com/settings/applications/new`.
+2. **Application name**: qualquer nome (ex.: "Mutirão (local)").
+3. **Homepage URL**: a URL do front (`URL_WEB`).
+4. **Redirect URIs** (dá pra cadastrar várias, até 10 — cadastre todas as que
+   for usar):
+   - `http://localhost:3333/api/auth/callback/github` — desenvolvimento fora
+     de Codespace.
+   - Se estiver num **GitHub Codespace**, ver o aviso abaixo antes de decidir
+     qual porta usar aqui.
+5. "Register application", depois copie o **Client ID** e gere um **Client
+   secret** ("Generate a new client secret" — só aparece uma vez).
+6. Cole os dois no `.env` (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`).
+
+**Atenção rodando num GitHub Codespace**: a porta da API (3333) por padrão é
+**privada**. Quando o navegador acessa uma porta privada diretamente, o
+GitHub injeta uma tela de autenticação própria (`github.dev/pf-signin`) no
+meio do caminho — e isso quebra o redirect do OAuth (o cookie de `state`
+não sobrevive à volta, dá erro `estado_invalido`). Deixar a porta pública
+**não resolve sozinho** (a mudança pode não persistir, e mesmo pública o
+comportamento foi inconsistente na prática).
+
+A solução que funcionou: fazer o navegador falar **só com a porta do front
+(5173)**, nunca com a da API. O Vite já proxya `/api/*` pra API
+(`apps/web/vite.config.ts`), então login e callback passam pela mesma
+origem que o resto do app:
+
+- No `.env`, aponte `URL_API` pra URL pública encaminhada do **front**
+  (não da API):
+  ```
+  URL_API="https://<nome-do-codespace>-5173.app.github.dev"
+  ```
+- No OAuth App, cadastre o Redirect URI correspondente:
+  ```
+  https://<nome-do-codespace>-5173.app.github.dev/api/auth/callback/github
+  ```
+- Pra logar, abra `https://<nome-do-codespace>-5173.app.github.dev/api/auth/login/github`
+  (porta 5173, não 3333).
+
+Achar o nome do Codespace: `echo $CODESPACE_NAME`, ou a aba **PORTS** do
+VS Code mostra a URL encaminhada de cada porta.
+
 ## 6. Criar o banco local ou o branch no Neon
 
 Duas opções. Em dúvida, use a local — é mais rápida para o dia a dia e não
@@ -145,9 +191,16 @@ npm run dev --workspace apps/web   # http://localhost:5173
 | Front conversa com a API | `curl http://localhost:5173/api/saude` (via proxy do Vite) → `{"status":"ok"}` |
 
 Login via GitHub só é testável com `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET`
-reais de um OAuth App; sem isso, `GET /api/auth/login/github` ainda deve
-responder `302` (redireciona ao GitHub, mesmo que o GitHub recuse por faltar
-client id válido).
+reais de um OAuth App (seção 5.1); sem isso, `GET /api/auth/login/github`
+ainda deve responder `302` (redireciona ao GitHub, mesmo que o GitHub
+recuse por faltar client id válido). Com as chaves configuradas, depois de
+autorizar no GitHub e cair de volta no front, confirme a sessão:
+
+```bash
+curl http://localhost:5173/api/auth/eu   # com o cookie do navegador, ou abrindo no próprio navegador
+```
+
+Esperado: `{"id":"...","githubLogin":"...","nome":"...","papel":"...","turma":null}`.
 
 ## 11. Erros comuns
 
@@ -159,6 +212,8 @@ configuração entra aqui **no mesmo dia**, ver regra abaixo.)*
 | `listen EADDRINUSE: address already in use 0.0.0.0:3333` | já tem uma API rodando nessa porta (esquecida de uma sessão anterior) | achar e encerrar o processo antigo, ou mudar `PORTA_API` no `.env` |
 | `SESSION_SECRET não definido — confira o .env` | `.env` não tem `SESSION_SECRET` preenchido | gerar um com `openssl rand -hex 32` e colar no `.env` |
 | `column "..." does not exist` ao consultar o banco direto via SQL | os nomes de coluna do Prisma seguem `camelCase`, não o nome do campo em português traduzido | conferir o nome exato em `apps/api/prisma/schema.prisma` ou usar o Prisma Client em vez de SQL cru |
+| `Be careful! The redirect_uri is not associated with this application` | a Redirect URI que a API está mandando pro GitHub não está cadastrada no OAuth App (ou a edição não foi salva) | conferir em `https://github.com/settings/developers` → seu app → **Redirect URIs**, e clicar em "Update application" depois de editar |
+| Volta do login em `/login?erro=estado_invalido`, rodando num **Codespace** | o navegador acessou a porta da API (3333) direto, que é privada por padrão — o GitHub injeta uma tela própria de autenticação (`pf-signin`) no meio do redirect e derruba o cookie de `state` | ver seção 5.1: apontar `URL_API` pra porta do **front** (5173) e logar por lá, não pela porta da API |
 
 ## Regra
 
