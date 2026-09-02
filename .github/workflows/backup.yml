@@ -1,0 +1,46 @@
+# O QUE FAZ:      roda scripts/backup.sh contra o banco de produção e sobe o
+#                 resultado como artifact do workflow (armazenamento de
+#                 backup, ver docs/plan.md seção 11.3).
+# QUANDO RODA:    todo dia às 03:00 UTC (agendado) — horário fora do período
+#                 de aula, para não competir com uso real do banco.
+# SE FALHAR:      o job fica vermelho na aba Actions e não há backup do dia.
+#                 Verificar isso antes de aplicar qualquer migration de
+#                 schema em produção.
+# RODAR NA MÃO:   aba Actions → "Backup diário" → "Run workflow".
+name: Backup diário
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    # Sem isso o job herda permissão de escrita por padrão em alguns
+    # repositórios; este workflow só lê o banco e escreve um artifact, não
+    # precisa de nenhuma permissão sobre o conteúdo do repositório.
+    permissions:
+      contents: read
+    steps:
+      - name: Baixar código (só para ter o scripts/backup.sh)
+        uses: actions/checkout@v4
+
+      - name: Rodar pg_dump
+        env:
+          # Conexão direta de produção — secret configurado em
+          # Settings → Secrets and variables → Actions. Nunca a do pooler
+          # (ver comentário em scripts/backup.sh sobre o porquê).
+          DATABASE_URL_BACKUP: ${{ secrets.DATABASE_URL_BACKUP }}
+        run: ./scripts/backup.sh
+
+      - name: Publicar backup como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-neon-${{ github.run_id }}
+          path: backups/*.dump
+          # Retenção de 90 dias: dá folga confortável para a restauração de
+          # teste mensal (plan.md 11.3) sem depender de baixar o dia certo
+          # na hora.
+          retention-days: 90
+          if-no-files-found: error

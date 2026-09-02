@@ -15,6 +15,9 @@ build/
 # prisma
 apps/api/prisma/*.db
 
+# backup local (scripts/backup.sh) — repositório é público, dump nunca entra aqui
+backups/
+
 # editor / sistema
 .DS_Store
 *.log
