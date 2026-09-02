@@ -31,15 +31,23 @@ jobs:
         # do Neon (o Neon acompanha versão nova do Postgres cedo). pg_dump
         # se recusa a tirar dump de um servidor mais novo que ele mesmo —
         # por isso instalamos pelo repositório oficial da PostgreSQL Global
-        # Development Group, que sempre tem a versão mais recente, em vez
-        # de fixar um número que o Neon vai ultrapassar de novo mais cedo
-        # ou mais tarde.
+        # Development Group. O pacote sem número de versão ("postgresql-
+        # client") não resolve sozinho: o runner já vem com a versão 16
+        # instalada, então o apt considera a dependência satisfeita e não
+        # baixa nada de novo. Por isso pedimos a versão 18 explicitamente
+        # — e como o pacote antigo continua instalado, colocamos o binário
+        # novo na frente do PATH, senão o /usr/bin/pg_dump antigo continua
+        # sendo o primeiro encontrado.
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-common
           sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
           sudo apt-get update
-          sudo apt-get install -y postgresql-client
+          sudo apt-get install -y postgresql-client-18
+          echo "/usr/lib/postgresql/18/bin" >> "$GITHUB_PATH"
+
+      - name: Conferir versão do pg_dump escolhida
+        run: pg_dump --version
 
       - name: Rodar pg_dump
         env:
