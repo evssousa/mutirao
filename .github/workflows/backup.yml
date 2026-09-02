@@ -26,6 +26,21 @@ jobs:
       - name: Baixar código (só para ter o scripts/backup.sh)
         uses: actions/checkout@v4
 
+      - name: Instalar pg_dump na versão do servidor Neon
+        # O runner do GitHub vem com um pg_dump mais antigo que o Postgres
+        # do Neon (o Neon acompanha versão nova do Postgres cedo). pg_dump
+        # se recusa a tirar dump de um servidor mais novo que ele mesmo —
+        # por isso instalamos pelo repositório oficial da PostgreSQL Global
+        # Development Group, que sempre tem a versão mais recente, em vez
+        # de fixar um número que o Neon vai ultrapassar de novo mais cedo
+        # ou mais tarde.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
       - name: Rodar pg_dump
         env:
           # Conexão direta de produção — secret configurado em
