@@ -6,6 +6,11 @@
 
 generator client {
   provider = "prisma-client-js"
+  // "native" cobre a máquina de quem está desenvolvendo local; a Vercel
+  // roda as funções serverless sobre Amazon Linux 2023, que precisa do
+  // engine "rhel-openssl-3.0.x" — sem isso o Prisma sobe local e quebra
+  // só em produção, do jeito mais difícil de depurar (plan.md, seção 12.1).
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {

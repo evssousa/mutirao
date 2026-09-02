@@ -1,0 +1,13 @@
+{
+  // Cobre só a função serverless em /api — o resto do código vive nos
+  // workspaces (apps/*, packages/*), cada um com seu próprio tsconfig.
+  // Existe para o editor e para checagem de tipo local; o build de verdade
+  // da função é feito pela Vercel na hora do deploy (vercel.json).
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "moduleResolution": "Bundler",
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["api"]
+}

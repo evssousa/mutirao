@@ -480,6 +480,10 @@ O custo dessa escolha é institucional, não técnico, e está tratado na seçã
 
 Duas alternativas continuam de pé caso a escola consiga verba ou mude de postura: Vercel Team no plano Pro (resolve o assunto e ainda libera cron por minuto) ou deploy por GitHub Actions com a CLI da Vercel, mantendo o código na organização.
 
+### Um projeto Vercel só, sem trocar Vite por Next.js — decisão tomada
+
+Front e back sobem juntos num único projeto Vercel, com Root Directory na raiz do repositório: a Vercel builda o site estático de `apps/web` e trata qualquer arquivo dentro de `/api` na raiz como função serverless. Isso não é exclusividade do Next.js — funciona pra qualquer framework front-end — e é o que o repositório já usa (`vercel.json`, `api/[...caminho].ts`). Detalhe e alternativa descartada em `docs/arquitetura.md`, registro de decisões.
+
 ### Consequências de ser serverless
 
 **Cold start em dois andares.** A função da Vercel esfria e o compute do Neon suspende após 5 minutos ocioso. Num sistema usado em janelas de aula, a primeira requisição do dia soma os dois. Não é impeditivo, mas o front precisa de estados de carregamento honestos, e a tela de login não pode parecer travada.
@@ -756,7 +760,7 @@ Métricas são de turma e de processo. Comparação pública entre alunos indivi
 2. Carga horária semanal real disponível por aluno.
 3. ~~Qual licença adotar.~~ **Decidido em 2026-09-01: MIT** — arquivo `LICENSE` na raiz do repositório.
 4. Onde guardar os **arquivos binários** — R2, B2 ou similar. Vercel não serve para isso, e o Neon é só Postgres.
-5. Front e back como **dois projetos Vercel** separados ou colapsados em um só (o que implicaria trocar Vite por Next.js).
+5. ~~Front e back como dois projetos Vercel separados ou colapsados em um só.~~ **Decidido em 2026-09-02: um projeto só**, sem trocar Vite por Next.js — ver `docs/arquitetura.md`, registro de decisões.
 6. Qual provedor e modelo de IA para a decomposição, e quem paga a conta.
 7. Duração da sprint: 2 semanas confirma, ou alinhar com bimestre?
 8. Demandas físicas terão SLA por tipo (ex.: formatação = 2 dias)?
